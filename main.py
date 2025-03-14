@@ -45,12 +45,12 @@ async def get_latest_article():
 
         formatted_context = " ".join(doc.page_content for doc in retrieved_docs)
 
-        short_summary = ollama.chat(model='llama3',
+        short_summary = ollama.chat(model='Llama-Koren',
                                      messages=[
                                          {"role": "system", "content": "Summarize the following text briefly in Korean."},
                                          {"role": "user", "content": formatted_context}])['message']['content']
 
-        medium_summary = ollama.chat(model='llama3',
+        medium_summary = ollama.chat(model='Llama-Koren',
                                       messages=[
                                           {"role": "system", "content": "Summarize the following text in Korean."},
                                           {"role": "user", "content": formatted_context}])['message']['content']
