@@ -1,14 +1,6 @@
-from fastapi import FastAPI
-from fastapi.responses import JSONResponse
-from pydantic import BaseModel
+
 import requests
-from langchain.docstore.document import Document
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.vectorstores import Chroma
-from langchain_ollama import OllamaEmbeddings
-import ollama
 import os
-import json
 import logging
 import signal
 import sys
@@ -105,58 +97,3 @@ class AITimesAgent:
         self.current_idx += 1  # 다음 ID로 이동
         return None
 
-app = FastAPI()
-
-embeddings = OllamaEmbeddings(model="mxbai-embed-large")
-vectorstore = Chroma(embedding_function=embeddings)
-
-class ArticleResponse(BaseModel):
-    short_summary: str
-    medium_summary: str
-    long_summary: str
-
-@app.get("/latest_article")
-async def get_latest_article():
-    # 최신 기사를 크롤링하기 위해 AITimesAgent 인스턴스 생성
-    agent = AITimesAgent(start_idx=168540)  # 적절한 시작 인덱스를 설정
-    article_data = agent.crawl_next_article()  # 최신 기사 크롤링
-
-    if article_data:
-        # 크롤링한 기사 내용에서 본문을 추출
-        content = article_data['content']
-        
-        # 요약 처리
-        docs = [Document(page_content=content)]
-        text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
-        splits = text_splitter.split_documents(docs)
-        vectorstore.add_documents(splits)
-
-        retrieved_docs = vectorstore.similarity_search(content)
-        if not retrieved_docs:
-            return JSONResponse(content={"error": "관련 문서를 찾을 수 없습니다."})
-
-        formatted_context = "\n\n".join(doc.page_content for doc in retrieved_docs)
-
-        short_summary = ollama.chat(model='llama3',
-                                     messages=[
-                                         {"role": "system", "content": "Please summarize the following text briefly in Korean."},
-                                         {"role": "user", "content": formatted_context}])['message']['content']
-
-        medium_summary = ollama.chat(model='llama3',
-                                      messages=[
-                                          {"role": "system", "content": "Please summarize the following text in Korean."},
-                                          {"role": "user", "content": formatted_context}])['message']['content']
-
-        long_summary = ollama.chat(model='llama3',
-                                    messages=[
-                                        {"role": "system", "content": "Please summarize the following text in detail in Korean."},
-                                        {"role": "user", "content": formatted_context}])['message']['content']
-
-        return ArticleResponse(short_summary=short_summary, medium_summary=medium_summary, long_summary=long_summary)
-    else:
-        return JSONResponse(content={"error": "최신 기사를 찾을 수 없습니다."})
-
-# 메인 실행 코드
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
