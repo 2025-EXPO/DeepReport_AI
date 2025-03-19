@@ -10,3 +10,4 @@ class Article(Base):
     short_summary = Column(String)
     medium_summary = Column(String)
     current_index = Column(Integer)
+    tag = Column(String)
