@@ -19,7 +19,7 @@ embeddings = OllamaEmbeddings(model="mxbai-embed-large")
 vectorstore = Chroma(embedding_function=embeddings)
 
 
-current_index = 168559  
+current_index = 168850 
 
 @router.get("/latest_article")
 async def get_latest_article(db: Session = Depends(get_db)):
@@ -30,6 +30,7 @@ async def get_latest_article(db: Session = Depends(get_db)):
     if article_data:
         content = article_data['content']
         
+        # 텍스트 정리
         content = content.replace('\n', ' ').replace('\r', ' ').replace('\\n', ' ').replace('\t', ' ').strip()
         content = re.sub(r'\s+', ' ', content)
 
@@ -44,6 +45,13 @@ async def get_latest_article(db: Session = Depends(get_db)):
 
         formatted_context = " ".join(doc.page_content for doc in retrieved_docs)
 
+        # 태그 요청 수정
+        tag = ollama.chat(model='Llama-Koren',
+                          messages=[
+                              {"role": "system", "content": "Generate only relevant tags based on the content of this news article. Please provide the tags in the format: 'Tag1', 'Tag2', 'Tag3' without any additional text."},
+                              {"role": "user", "content": formatted_context}])['message']['content']
+
+        # 요약 요청 수정
         short_summary = ollama.chat(model='Llama-Koren',
                                      messages=[
                                          {"role": "system", "content": "Summarize the following text briefly in Korean."},
@@ -54,17 +62,26 @@ async def get_latest_article(db: Session = Depends(get_db)):
                                           {"role": "system", "content": "Summarize the following text in Korean."},
                                           {"role": "user", "content": formatted_context}])['message']['content']
 
-        short_summary = short_summary.replace('\n', ' ').replace('\\n', ' ').strip()
-        medium_summary = medium_summary.replace('\n', ' ').replace('\\n', ' ').strip()
-
         # 데이터베이스에 저장
-        new_article = Article(short_summary=short_summary, medium_summary=medium_summary, current_index=current_index)
+        new_article = Article(
+            short_summary=short_summary,
+            medium_summary=medium_summary,
+            current_index=current_index,
+            tag=tag  
+        )
         db.add(new_article)
         db.commit()
         db.refresh(new_article)
 
         current_index += 1
 
-        return Article(short_summary=short_summary, medium_summary=medium_summary, current_index=current_index)
+        # 응답 반환
+        return JSONResponse(content={
+            "short_summary": short_summary,
+            "medium_summary": medium_summary,
+            "current_index": current_index,
+            "tag": tag
+        })
     else:
         return JSONResponse(content={"error": "최신 기사를 찾을 수 없습니다."})
+
