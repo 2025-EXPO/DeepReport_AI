@@ -7,7 +7,8 @@ class Article(Base):
     __tablename__ = "articles"
 
     id = Column(Integer, primary_key=True, index=True)
-    short_summary = Column(String)
-    medium_summary = Column(String)
+    news_title = Column(String)
+    news_content = Column(String)
     current_index = Column(Integer)
     tag = Column(String)
+    base_url = Column(String)
