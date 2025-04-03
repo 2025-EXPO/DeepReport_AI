@@ -1,25 +1,28 @@
-from fastapi import FastAPI, Depends
-from fastapi.responses import JSONResponse
-from pydantic import BaseModel
-import requests
-from langchain.docstore.document import Document
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.vectorstores import Chroma
-from langchain_ollama import OllamaEmbeddings
-import ollama
-from news import AITimesAgent
-import re
-from sqlalchemy.orm import Session
-from database import get_db  
-from models import Article  # models.py에서 Article 모델 가져오기
-from router import router
+# main.py
+from fastapi import FastAPI, Request
+from fastapi.responses import StreamingResponse
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.interval import IntervalTrigger
+import logging
+import asyncio
+import json
+from datetime import datetime
+import router
+# latest_article.py에서 함수 임포트
+from latest_article import fetch_and_store_latest_article
+import router.router
+import router.sse
 
 app = FastAPI()
-app.include_router(router)
+app.include_router(router.router.router)
+app.include_router(router.sse.router)
+
+
 
 @app.get('/')
 def get_main():
-    return{'message' : 'welcome modeep'}
+    return {'message': 'welcome modeep'}
+
 
 if __name__ == "__main__":
     import uvicorn
