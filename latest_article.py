@@ -21,7 +21,7 @@ model = genai.GenerativeModel('gemini-2.0-flash')
 # 세션 팩토리 생성
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-current_index = 169290
+current_index = 169311
 
 # 스레드 풀 생성 - 모든 블로킹 작업에 사용
 thread_pool = ThreadPoolExecutor(max_workers=5)
