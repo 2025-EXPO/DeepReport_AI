@@ -17,7 +17,7 @@ model = genai.GenerativeModel('gemini-2.0-flash')
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-current_index = 169382
+current_index = 169385
 
 thread_pool = ThreadPoolExecutor(max_workers=5)
 
