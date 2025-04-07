@@ -16,10 +16,21 @@ genai.configure(api_key=os.getenv("GEMINI_KEY"))
 model = genai.GenerativeModel('gemini-2.0-flash')
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-current_index = 169385
-
 thread_pool = ThreadPoolExecutor(max_workers=5)
+
+def get_next_index_from_db() -> int:
+    db = SessionLocal()
+    try:
+        last_article = db.query(Article).order_by(Article.current_index.desc()).first()
+        if last_article:
+            return last_article.current_index + 1
+        else:
+            return 169400
+    finally:
+        db.close()
+
+current_index = get_next_index_from_db()
+print(current_index)
 
 def generate_with_google(prompt: str) -> str:
     try:
@@ -36,7 +47,7 @@ async def run_in_thread(func, *args, **kwargs):
     loop = asyncio.get_event_loop()
     return await loop.run_in_executor(thread_pool, func, *args, **kwargs)
 
-def crawl_with_agent(agent, idx):
+def crawl_with_agent(agent):
     try:
         return agent.crawl_next_article()
     except Exception as e:
@@ -49,7 +60,7 @@ async def fetch_and_store_latest_article():
         agent = AITimesAgent(start_idx=current_index)
         
         for _ in range(3):  
-            article_data = await run_in_thread(crawl_with_agent, agent, current_index)
+            article_data = await run_in_thread(crawl_with_agent, agent)
             
             if not article_data:
                 current_index += 1
