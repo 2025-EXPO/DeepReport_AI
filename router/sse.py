@@ -60,10 +60,8 @@ async def check_and_notify_new_articles():
         is_new_article = await fetch_and_store_latest_article()
 
         if is_new_article:
-            # 동기 DB 세션 사용
             db: Session = SessionLocal()
             try:
-                # 최신 기사 1개 가져오기 (예: ID 역순)
                 latest_article = db.query(Article).order_by(Article.current_index.desc()).first()
 
                 if latest_article:
