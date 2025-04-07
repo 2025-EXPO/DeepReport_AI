@@ -1,15 +1,12 @@
-from fastapi import FastAPI, APIRouter, Depends
+from fastapi import  APIRouter, Depends
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from database import get_db
 from models import Article
-from typing import List
 import os
 import google.generativeai as genai
 import re
 from news import AITimesAgent
-from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.triggers.interval import IntervalTrigger
 import logging
 
 router = APIRouter()
@@ -37,7 +34,7 @@ async def get_latest_article(db: Session = Depends(get_db)):
     global current_index
     agent = AITimesAgent(start_idx=current_index)
 
-    for _ in range(3):  # 최대 3번 시도
+    for _ in range(3): 
         article_data = agent.crawl_next_article()
         base_url = agent.base_url + str(current_index)
 
