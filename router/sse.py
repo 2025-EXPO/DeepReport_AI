@@ -6,6 +6,9 @@ import json
 from datetime import datetime
 from latest_article import fetch_and_store_latest_article
 import logging
+from sqlalchemy.orm import Session
+from database import get_db, SessionLocal  # 경로는 실제 구조에 맞게 수정
+from models import Article  # Artic
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -53,23 +56,43 @@ async def news_notifications(request: Request):
     )
 
 async def check_and_notify_new_articles():
- 
     try:
         is_new_article = await fetch_and_store_latest_article()
-        
+
         if is_new_article:
-            event_data = {
-                "event": "new_article",
-                "message": "새로운 기사가 추가되었습니다. API를 통해 조회하세요.",
-                "timestamp": datetime.now().isoformat()
-            }
-            await send_event_to_clients(event_data)
-            logger.info(f"새 기사 알림을 {len(clients)}개 클라이언트에게 전송했습니다.")
+            # 동기 DB 세션 사용
+            db: Session = SessionLocal()
+            try:
+                # 최신 기사 1개 가져오기 (예: ID 역순)
+                latest_article = db.query(Article).order_by(Article.current_index.desc()).first()
+
+                if latest_article:
+                    article_data = {
+                        "title": latest_article.news_title,
+                        "id": latest_article.current_index,
+                        "content": latest_article.news_content,
+                        "tag": latest_article.tag,
+                        "url": latest_article.base_url
+                    }
+
+                    event_data = {
+                        "event": "new_article",
+                        "message": "새로운 기사가 추가되었습니다. API를 통해 조회하세요.",
+                        "article": article_data,
+                        "timestamp": datetime.now().isoformat()
+                    }
+
+                    await send_event_to_clients(event_data)
+                    logger.info(f"새 기사 알림을 {len(clients)}개 클라이언트에게 전송했습니다.")
+                else:
+                    logger.warning("DB에서 최신 기사를 찾을 수 없습니다.")
+            finally:
+                db.close()
         else:
             logger.info("새 기사가 없거나 크롤링에 실패했습니다.")
     except Exception as e:
         logger.error(f"크롤링 및 알림 과정에서 오류 발생: {e}")
-
+        
 def run_async_job():
 
     loop = asyncio.new_event_loop()
