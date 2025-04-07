@@ -178,3 +178,5 @@ coding.py
 model/
 data/
 .env
+migrations/
+alembic.ini
