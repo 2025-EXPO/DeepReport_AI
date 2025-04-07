@@ -1,26 +1,15 @@
-# main.py
-from fastapi import FastAPI, Request, APIRouter
+
+from fastapi import Request, APIRouter
 from fastapi.responses import StreamingResponse
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from apscheduler.triggers.interval import IntervalTrigger
-import logging
 import asyncio
 import json
 from datetime import datetime
-from router.router import router
 from latest_article import fetch_and_store_latest_article
+import logging
 
 router = APIRouter()
-
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# ThreadPoolExecutor만 사용
-executors = {
-    'default': {'type': 'threadpool', 'max_workers': 20}
-}
-
-scheduler = AsyncIOScheduler(executors=executors)
 clients = set()
 
 async def send_event_to_clients(event_data):
@@ -31,10 +20,6 @@ async def send_event_to_clients(event_data):
         except Exception:
             dead_clients.add(client)
     clients.difference_update(dead_clients)
-
-@router.get('/')
-def get_main():
-    return {'message': 'welcome modeep'}
 
 @router.get('/news-notifications')
 async def news_notifications(request: Request):
@@ -68,14 +53,10 @@ async def news_notifications(request: Request):
     )
 
 async def check_and_notify_new_articles():
-    """
-    최신 기사를 크롤링하고 클라이언트에게 알림
-    """
+ 
     try:
-        # 비동기 크롤링 함수 호출
         is_new_article = await fetch_and_store_latest_article()
         
-        # 새 기사가 저장되었다면 클라이언트에게 알림
         if is_new_article:
             event_data = {
                 "event": "new_article",
@@ -89,39 +70,11 @@ async def check_and_notify_new_articles():
     except Exception as e:
         logger.error(f"크롤링 및 알림 과정에서 오류 발생: {e}")
 
-# 스케줄러에서 실행할 동기 래퍼 함수
 def run_async_job():
-    """
-    비동기 작업을 실행하기 위한 동기 래퍼 함수
-    """
+
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     try:
         loop.run_until_complete(check_and_notify_new_articles())
     finally:
         loop.close()
-
-@router.on_event("startup")
-async def start_scheduler():
-    if not scheduler.running:
-        try:
-            scheduler.remove_job('news_crawler_job')
-        except Exception as e:
-            logger.warning(f"기존 작업 제거 중 오류 발생: {e}")
-            
-        # 동기 래퍼 함수 스케줄링
-        scheduler.add_job(
-            run_async_job,
-            trigger=IntervalTrigger(minutes=10),
-            id='news_crawler_job',
-            max_instances=1
-        )
-            
-        scheduler.start()
-        logger.info("스케줄러 시작: 1분마다 뉴스 크롤링 및 SSE 알림")
-
-@router.on_event("shutdown")
-async def shutdown_scheduler():
-    if scheduler.running:
-        scheduler.shutdown()
-        logger.info("스케줄러 종료")
