@@ -55,7 +55,7 @@ async def start_scheduler():
         # 동기 래퍼 함수 스케줄링
         scheduler.add_job(
             run_async_job,
-            trigger=IntervalTrigger(minutes=1),
+            trigger=IntervalTrigger(minutes=30),
             id='news_crawler_job',
             max_instances=1
         )
