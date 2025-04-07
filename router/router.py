@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from database import get_db
@@ -12,9 +12,11 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-@router.get("/articles/initial", response_model=List[dict])
-async def get_initial_articles(db: Session = Depends(get_db)):
-    articles = db.query(Article).limit(10).all()
+@router.get("/articles", response_model=List[dict])
+async def get_articles(index: int = Query(0, ge=0), db: Session = Depends(get_db)):
+    skip = index * 10
+    articles = db.query(Article).offset(skip).limit(10).all()
+
     article_list = [{
         "title": article.news_title,
         "id": article.current_index,
@@ -22,21 +24,8 @@ async def get_initial_articles(db: Session = Depends(get_db)):
         "tag": article.tag,
         "url": article.base_url
     } for article in articles]
+
     return JSONResponse(content=article_list)
-
-
-@router.get("/articles/all", response_model=List[dict])
-async def get_all_articles(skip: int = 0, db: Session = Depends(get_db)):
-    articles = db.query(Article).offset(skip).limit(10).all()  
-    article_list = [{
-        "title": article.news_title,
-        "id": article.current_index,
-        "content": article.news_content,
-        "tag": article.tag,
-        "url": article.base_url
-    } for article in articles]
-    return JSONResponse(content=article_list)
-
 
 @router.get("/article/{article_id}")
 async def get_article_detail(article_id: int, db: Session = Depends(get_db)):
