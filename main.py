@@ -1,11 +1,11 @@
 from fastapi import FastAPI
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.interval import IntervalTrigger
-import router
 from router.sse import run_async_job
 import logging
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
+from router import router, sse, AI_agent, gemini
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -30,7 +30,7 @@ async def lifespan(app: FastAPI):
             max_instances=1
         )
         scheduler.start()
-        logger.info("스케줄러 시작: 1분마다 뉴스 크롤링 및 SSE 알림")
+        logger.info("스케줄러 시작: 1 분마다 뉴스 크롤링 및 SSE 알림")
     
     yield  
 
@@ -49,9 +49,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(router.router.router)
-app.include_router(router.sse.router)
+app.include_router(router.router)
+app.include_router(sse.router)
 # app.include_router(router.gemini.router)
+app.include_router(AI_agent.router)
 
 @app.get("/")
 def get_main():
