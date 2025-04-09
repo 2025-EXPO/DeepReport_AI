@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
-from database import get_db
-from models import Article
+from database.database import get_db
+from models.models import Article
 from typing import List
 import logging
 
