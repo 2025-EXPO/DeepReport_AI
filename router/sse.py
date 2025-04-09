@@ -4,11 +4,11 @@ from fastapi.responses import StreamingResponse
 import asyncio
 import json
 from datetime import datetime
-from latest_article import fetch_and_store_latest_article
+from src.latest_article import fetch_and_store_latest_article
 import logging
 from sqlalchemy.orm import Session
-from database import get_db, SessionLocal  # 경로는 실제 구조에 맞게 수정
-from models import Article  # Artic
+from database.database import get_db, SessionLocal  # 경로는 실제 구조에 맞게 수정
+from models.models import Article  # Artic
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
