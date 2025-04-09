@@ -1,13 +1,14 @@
 from sqlalchemy.orm import sessionmaker
-from database import engine
-from models import Article
+from database.database import engine
+from models.models import Article
 import os
 import google.generativeai as genai
 import re
-from news import AITimesAgent
+from src.news import AITimesAgent
 import logging
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
+from src.process_database import remove_partial_duplicate_articles
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -41,7 +42,7 @@ def generate_with_google(prompt: str) -> str:
         return "API 호출 중 오류 발생"
 
 def clean_text(text: str) -> str:
-    return re.sub(r'\s+', ' ', text.replace('\n', ' ').replace('\\', '').replace('**', ' ').replace('"', '').strip())
+    return re.sub(r'\s+', ' ', text.replace('\n', ' ').replace('\\', '').replace('**', ' ').replace('"', '').replace('*', '').strip())
 
 async def run_in_thread(func, *args, **kwargs):
     loop = asyncio.get_event_loop()
@@ -56,6 +57,8 @@ def crawl_with_agent(agent):
 
 async def fetch_and_store_latest_article():
     global current_index
+    remove_partial_duplicate_articles()
+    
     try:
         agent = AITimesAgent(start_idx=current_index)
         
@@ -72,7 +75,7 @@ async def fetch_and_store_latest_article():
             
             news_content = clean_text(await run_in_thread(
                 generate_with_google, 
-                f"{content} Summarize the following text in Korean with only key point-based declarative sentences."
+                f"{content} Summarize the following text in Korean using only key point-based declarative sentences. Start directly with the summary—no introductory sentences."
             ))
             
             tag = clean_text(await run_in_thread(
