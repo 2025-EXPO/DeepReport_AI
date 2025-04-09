@@ -72,7 +72,7 @@ async def fetch_and_store_latest_article():
             
             news_content = clean_text(await run_in_thread(
                 generate_with_google, 
-                f"{content} Summarize the following text in detail in Korean using declarative sentences only."
+                f"{content} Summarize the following text in Korean with only key point-based declarative sentences."
             ))
             
             tag = clean_text(await run_in_thread(
