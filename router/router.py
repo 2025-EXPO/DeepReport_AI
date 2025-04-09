@@ -15,7 +15,13 @@ logger = logging.getLogger(__name__)
 @router.get("/articles", response_model=List[dict])
 async def get_articles(index: int = Query(0, ge=0), db: Session = Depends(get_db)):
     skip = index * 10
-    articles = db.query(Article).offset(skip).limit(10).all()
+    articles = (
+        db.query(Article)
+        .order_by(Article.current_index.desc())  
+        .offset(skip)
+        .limit(10)
+        .all()
+    )
 
     article_list = [{
         "title": article.news_title,
@@ -26,6 +32,7 @@ async def get_articles(index: int = Query(0, ge=0), db: Session = Depends(get_db
     } for article in articles]
 
     return JSONResponse(content=article_list)
+
 
 @router.get("/article/{article_id}")
 async def get_article_detail(article_id: int, db: Session = Depends(get_db)):
