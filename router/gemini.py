@@ -1,12 +1,12 @@
 from fastapi import  APIRouter, Depends
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
-from database import get_db
-from models import Article
+from database.database import get_db
+from models.models import Article
 import os
 import google.generativeai as genai
 import re
-from news import AITimesAgent
+from src.news import AITimesAgent
 import logging
 
 router = APIRouter()
