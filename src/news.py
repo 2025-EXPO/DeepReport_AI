@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
-    handlers=[logging.FileHandler("aitimes_crawler.log"), logging.StreamHandler()],
+    handlers=[logging.StreamHandler()],
 )
 
 
