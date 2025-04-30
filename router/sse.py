@@ -99,3 +99,4 @@ def run_async_job():
         loop.run_until_complete(check_and_notify_new_articles())
     finally:
         loop.close()
+
