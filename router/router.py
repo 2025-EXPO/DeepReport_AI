@@ -28,7 +28,8 @@ async def get_articles(index: int = Query(0, ge=0), db: Session = Depends(get_db
         "id": article.current_index,
         "content": article.news_content,
         "tag": article.tag,
-        "url": article.base_url
+        "url": article.base_url,
+        
     } for article in articles]
 
     return JSONResponse(content=article_list)
@@ -42,7 +43,8 @@ async def get_article_detail(article_id: int, db: Session = Depends(get_db)):
             "title": article.news_title,
             "content": article.news_content,
             "tags": article.tag,
-            "url": article.base_url
+            "url": article.base_url,
+            
         })
     else:
         return JSONResponse(content={"error": "해당 기사를 찾을 수 없습니다."})
