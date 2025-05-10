@@ -24,7 +24,7 @@ async def lifespan(app: FastAPI):
 
         scheduler.add_job(
             run_async_job,
-            trigger=IntervalTrigger(minutes=10),
+            trigger=IntervalTrigger(minutes=100),
             id="news_crawler_job",
             max_instances=1,
         )
