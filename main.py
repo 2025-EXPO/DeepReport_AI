@@ -14,6 +14,7 @@ executors = {"default": {"type": "threadpool", "max_workers": 20}}
 scheduler = AsyncIOScheduler(executors=executors)
 
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     if not scheduler.running:
@@ -26,7 +27,7 @@ async def lifespan(app: FastAPI):
             run_async_job,
             trigger=IntervalTrigger(minutes=100),
             id="news_crawler_job",
-            max_instances=1,
+            max_instances=3,
         )
         scheduler.start()
         logger.info("스케줄러 시작: 1 분마다 뉴스 크롤링 및 SSE 알림")
