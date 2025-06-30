@@ -35,7 +35,7 @@ def ask_about_article(article_id: int, question: str, db: Session = Depends(get_
         f"사용자 질문: {question}\n"
         f"답변:"
     )
-    
+
 
     result = ask_gemini(prompt)
     return JSONResponse(content={"answer": result})
