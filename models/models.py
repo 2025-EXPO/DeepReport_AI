@@ -10,3 +10,4 @@ class Article(Base):
     current_index = Column(Integer)
     tag = Column(String)
     base_url = Column(String)
+
