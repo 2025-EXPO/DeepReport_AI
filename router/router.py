@@ -23,7 +23,6 @@ async def get_articles(index: int = Query(0, ge=0), db: Session = Depends(get_db
         .all()
     )
 
-
     article_list = [{
         "title": article.news_title,
         "id": article.current_index,
