@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from database.database import get_db, SessionLocal  # 경로는 실제 구조에 맞게 수정
 from models.models import Article  # Artic
 
+
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
