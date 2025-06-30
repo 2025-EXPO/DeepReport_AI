@@ -9,3 +9,4 @@ psycopg2
 google.generativeai
 bs4
 alembic
+
