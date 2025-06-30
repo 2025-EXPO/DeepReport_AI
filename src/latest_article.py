@@ -13,7 +13,6 @@ from src.process_database import remove_partial_duplicate_articles
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-
 genai.configure(api_key=os.getenv("GEMINI_KEY"))
 model = genai.GenerativeModel('gemini-2.0-flash')
 

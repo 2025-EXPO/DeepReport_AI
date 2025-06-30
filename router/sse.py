@@ -10,10 +10,10 @@ from sqlalchemy.orm import Session
 from database.database import get_db, SessionLocal  # 경로는 실제 구조에 맞게 수정
 from models.models import Article  # Artic
 
-router = APIRouter()
-logger = logging.getLogger(__name__)
+router = APIRouter() # API router 
+logger = logging.getLogger(__name__) # 로그 띄우기
 
-clients = set()
+clients = set() # 클라이언트 세팅
 
 async def send_event_to_clients(event_data):
     dead_clients = set()

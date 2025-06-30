@@ -10,7 +10,6 @@ def remove_partial_duplicate_articles():
         seen_contents = set()
         to_delete = []
 
-
         for article in articles:
             is_duplicate = (
                 article.news_title in seen_titles or

@@ -10,7 +10,6 @@ logging.basicConfig(
 )
 
 
-
 class AITimesAgent:
     def __init__(self, start_idx=168551):
         self.base_url = "https://www.aitimes.com/news/articleView.html?idxno="
