@@ -39,6 +39,7 @@ async def get_latest_article(db: Session = Depends(get_db)):
         base_url = agent.base_url + str(current_index)
 
         if article_data:
+            
             content = article_data['content']
             content = re.sub(r'\s+', ' ', content.replace('\n', ' ').replace('\r', ' ').strip())
 
